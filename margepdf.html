@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Solution - Merge PDF Online Free</title>
+    <meta name="description" content="Merge multiple PDF files into one easily and for free. Upload your PDF documents and download the merged file in seconds.">
+    <meta name="keywords" content="merge PDF, PDF tools, PDF solution, online PDF merge, free PDF merger">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #ff6f61;
+        }
+
+        .description {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ff6f61;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none; /* Hide the default file input */
+        }
+
+        .upload-button {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #e65c50;
+        }
+
+        #file-list {
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none; /* Initially hidden until files are uploaded */
+        }
+
+        #download-area {
+            margin-top: 20px;
+            display: none; /* Initially hidden until PDF is merged */
+        }
+
+        .download-button {
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .download-button:hover {
+            background-color: #218838; /* Darker green */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Solution - Merge PDF</h1>
+        <p class="description">Select multiple PDF files to merge them into one PDF.</p>
+        
+        <div class="upload-area">
+            <input type="file" id="file-input" accept="application/pdf" multiple>
+            <label for="file-input" class="upload-button">Choose PDF Files</label>
+            <button id="merge-button">Merge PDFs</button>
+        </div>
+
+        <div id="file-list" role="region" aria-live="polite"></div>
+
+        <div id="download-area" role="region" aria-hidden="true">
+            <button id="download-button" class="download-button">Download Merged PDF</button>
+        </div>
+    </div>
+
+    <script>
+        let mergedPdfUrl = '';
+
+        document.getElementById('file-input').addEventListener('change', (event) => {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = ''; // Clear previous file list
+            const files = event.target.files;
+
+            for (let i = 0; i < files.length; i++) {
+                fileList.innerHTML += `<p>${files[i].name}</p>`; // Display the name of each file
+            }
+            fileList.style.display = 'block'; // Show the file list
+            document.getElementById('download-area').style.display = 'none'; // Hide download area until merging is complete
+        });
+
+        document.getElementById('merge-button').addEventListener('click', async () => {
+            const fileInput = document.getElementById('file-input');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert('Please select at least one PDF file.');
+                return;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.create();
+
+            for (let i = 0; i < files.length; i++) {
+                const fileReader = new FileReader();
+                const file = files[i];
+                
+                fileReader.onload = async (event) => {
+                    const pdfBytes = new Uint8Array(event.target.result);
+                    const sourcePdf = await PDFLib.PDFDocument.load(pdfBytes);
+                    const copiedPages = await pdfDoc.copyPages(sourcePdf, sourcePdf.getPageIndices());
+
+                    copiedPages.forEach((page) => {
+                        pdfDoc.addPage(page);
+                    });
+
+                    if (i === files.length - 1) {
+                        const mergedPdfBytes = await pdfDoc.save();
+                        const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                        mergedPdfUrl = URL.createObjectURL(blob); // Save the merged PDF URL
+                        document.getElementById('download-area').style.display = 'block'; // Show the download area
+                    }
+                };
+
+                fileReader.readAsArrayBuffer(file);
+            }
+        });
+
+        document.getElementById('download-button').addEventListener('click', () => {
+            if (mergedPdfUrl) {
+                const link = document.createElement('a');
+                link.href = mergedPdfUrl;
+                link.download = 'merged.pdf';
+                link.click(); // Simulate click to download
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Generator - Create Your Color Combinations</title>
+    <meta name="description" content="Generate beautiful color palettes based on your selected primary color. Adjust shades, brightness, and easily copy hex codes.">
+    <meta name="keywords" content="color palette generator, color combinations, color picker, color shades, hex color codes">
+    <style>
+        /* Base Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #3e8e41, #2c3e50);
+            color: #fff;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 400px;
+            max-width: 90%;
+            z-index: 10;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .palette {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .color-box:hover {
+            transform: scale(1.1);
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #3498db;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Background Animation */
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0.5;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .bubble1 { width: 100px; height: 100px; top: 10%; left: 20%; animation-delay: 0s; }
+        .bubble2 { width: 150px; height: 150px; top: 60%; left: 70%; animation-delay: 1s; }
+        .bubble3 { width: 80px; height: 80px; top: 40%; left: 30%; animation-delay: 2s; }
+        .bubble4 { width: 120px; height: 120px; top: 70%; left: 85%; animation-delay: 3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Palette Generator</h1>
+        <input type="color" id="colorPicker" onchange="generatePalette()" />
+        <div class="palette" id="palette"></div>
+        <button class="copy-btn" id="copyBtn" style="display:none;">Copy Hex Code</button>
+        <div id="hexCode" style="margin-top: 10px; font-size: 1.2rem;"></div>
+    </div>
+
+    <!-- Background Floating Bubbles -->
+    <div class="floating-bubble bubble1"></div>
+    <div class="floating-bubble bubble2"></div>
+    <div class="floating-bubble bubble3"></div>
+    <div class="floating-bubble bubble4"></div>
+
+    <!-- JavaScript for Palette Generation -->
+    <script>
+        function generatePalette() {
+            const primaryColor = document.getElementById("colorPicker").value;
+            const palette = document.getElementById("palette");
+            const hexCode = document.getElementById("hexCode");
+            const copyBtn = document.getElementById("copyBtn");
+
+            // Clear previous colors
+            palette.innerHTML = '';
+
+            // Generate complementary colors
+            const complementaryColors = [
+                adjustColor(primaryColor, 0.3),
+                adjustColor(primaryColor, 0.6),
+                adjustColor(primaryColor, -0.3),
+                adjustColor(primaryColor, -0.6)
+            ];
+
+            complementaryColors.forEach(color => {
+                const colorBox = document.createElement("div");
+                colorBox.classList.add("color-box");
+                colorBox.style.backgroundColor = color;
+                colorBox.onclick = () => copyColor(color);
+                palette.appendChild(colorBox);
+            });
+
+            // Display selected hex code
+            hexCode.innerText = `Selected Color: ${primaryColor}`;
+            copyBtn.style.display = "inline-block";
+        }
+
+        function adjustColor(color, amount) {
+            const colorValue = parseInt(color.slice(1), 16);
+            const r = (colorValue >> 16) + amount * 255;
+            const g = ((colorValue >> 8) & 0x00FF) + amount * 255;
+            const b = (colorValue & 0x0000FF) + amount * 255;
+            return `#${((1 << 24) + (Math.min(255, Math.max(0, r)) << 16) + (Math.min(255, Math.max(0, g)) << 8) + Math.min(255, Math.max(0, b))).toString(16).slice(1)}`;
+        }
+
+        function copyColor(color) {
+            navigator.clipboard.writeText(color).then(() => {
+                alert(`Copied ${color} to clipboard!`);
+            }, () => {
+                alert('Failed to copy color.');
+            });
+        }
+    </script>
+</body>
+</html>
+

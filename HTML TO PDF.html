@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Free HTML to PDF Conversion Tool</title>
+    <meta name="description" content="Convert HTML documents or web pages to PDF format quickly and easily with our free online HTML to PDF conversion tool.">
+    <meta name="keywords" content="HTML to PDF, convert HTML to PDF, online HTML converter, free HTML to PDF, HTML to PDF conversion">
+    <link rel="canonical" href="YOUR_PAGE_URL_HERE"> <!-- Replace with the actual URL -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        h2, h3 {
+            margin: 10px 0;
+        }
+        p {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 10px;
+            resize: vertical;
+        }
+        input[type="file"], input[type="text"] {
+            margin: 15px 0;
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Free HTML to PDF Conversion Tool</h1>
+    <p>Convert your HTML documents or web pages to PDF format quickly and easily with our free online HTML to PDF conversion tool. Enter a URL or paste your HTML code below to get started!</p>
+
+    <div>
+        <h2>Enter URL</h2>
+        <input type="text" id="url-input" placeholder="Enter the URL of the web page">
+    </div>
+
+    <div>
+        <h2>Or Paste HTML Code</h2>
+        <textarea id="html-code" placeholder="Paste your HTML code here..."></textarea>
+    </div>
+
+    <button onclick="convertHTMLToPDF()">Convert to PDF</button>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner"></div>
+
+    <h3>Download PDF</h3>
+    <a id="download-link" style="display: none;">Download PDF</a>
+
+    <script>
+        function showLoading(isLoading) {
+            document.getElementById('loading-spinner').style.display = isLoading ? 'block' : 'none';
+        }
+
+        async function convertHTMLToPDF() {
+            const urlInput = document.getElementById('url-input').value;
+            const htmlCode = document.getElementById('html-code').value;
+            let htmlContent = '';
+
+            if (urlInput.trim() !== '') {
+                try {
+                    // Use a CORS proxy for fetching the URL
+                    const response = await fetch(`https://cors-anywhere.herokuapp.com/${urlInput}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    htmlContent = await response.text();
+                } catch (error) {
+                    alert('Error fetching the URL. Please check the URL and try again.');
+                    return;
+                }
+            } else if (htmlCode.trim() !== '') {
+                htmlContent = htmlCode;
+            } else {
+                alert('Please enter a URL or paste your HTML code.');
+                return;
+            }
+
+            await generatePDF(htmlContent);
+        }
+
+        async function generatePDF(htmlContent) {
+            showLoading(true);
+            const element = document.createElement('div');
+            element.innerHTML = htmlContent;
+            document.body.appendChild(element);
+
+            const pdf = await html2pdf().from(element).output('blob');
+            const blob = new Blob([pdf], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = url;
+            downloadLink.download = 'converted.pdf'; // Specify the filename
+            downloadLink.style.display = 'block';
+            downloadLink.innerText = 'Download PDF';
+            showLoading(false);
+            document.body.removeChild(element);
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+</html>
+

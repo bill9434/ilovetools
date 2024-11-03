@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Image Resizer and Compressor Tool</title>
+    <meta name="description" content="Easily resize and compress images online for free. Download images in various formats like JPEG, PNG, and WEBP. Perfect for optimizing images for web use.">
+    <meta name="keywords" content="image resizer, image compressor, online image tool, download images, resize images online, compress images online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourwebsite.com/image-resizer" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black; /* Set the background to black */
+            color: white; /* Change text color to white */
+            margin: 0;
+            padding: 20px;
+            overflow-y: auto; /* Allow vertical scrolling */
+            position: relative;
+            min-height: 100vh; /* Ensure body takes at least full height */
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1; /* Bring content above rain effect */
+        }
+        input[type="file"], input[type="number"], select, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+        }
+        a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            display: none; /* Initially hidden */
+        }
+        button.download-btn {
+            display: none; /* Initially hidden */
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button.download-btn:hover {
+            background-color: #0056b3;
+        }
+        .size-info {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .image-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .image-display div {
+            flex: 1;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .image-display div:last-child {
+            margin-right: 0;
+        }
+        img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Binary rain effect */
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks through the rain */
+            overflow: hidden;
+            z-index: 0; /* Below the container */
+        }
+
+        .rain div {
+            color: #0F0; /* Green color for rain effect */
+            font-family: monospace;
+            font-size: 20px;
+            position: absolute;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh); /* Fall to the bottom */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="rain" id="rain"></div> <!-- Binary rain effect container -->
+
+<div class="container">
+    <h1>Online Image Resizer and Compressor Tool</h1>
+    
+    <p>Optimize your images easily by resizing or compressing them for web use. Upload your images and download them in your preferred format!</p>
+
+    <!-- Resize Section -->
+    <h2>Resize Image</h2>
+    <input type="file" id="resizeImageInput" accept="image/*" onchange="loadResizeImage()">
+    <label>Width:</label>
+    <input type="number" id="resizeWidth" placeholder="Enter width">
+    <label>Height:</label>
+    <input type="number" id="resizeHeight" placeholder="Enter height">
+    <label>Units:</label>
+    <select id="resizeUnits">
+        <option value="px">Pixels</option>
+        <option value="in">Inches</option>
+        <option value="cm">Centimeters</option>
+        <option value="mm">Millimeters</option>
+    </select>
+    <label>Download Format:</label>
+    <select id="resizeFormat">
+        <option value="jpeg">JPEG</option>
+        <option value="png">PNG</option>
+        <option value="webp">WEBP</option>
+    </select>
+    <button onclick="resizeImage()">Resize Image</button>
+    <canvas id="outputCanvas"></canvas>
+    <a id="downloadLink" download="resized_image.jpeg">Download Resized Image</a>
+    
+    <!-- Compress Section -->
+    <h2>Compress Image</h2>
+    <input type="file" id="compressImageInput" accept="image/*" onchange="loadCompressImage()">
+    <div class="size-info" id="originalSizeInfo"></div>
+    <label>Target Size (KB):</label>
+    <input type="number" id="compressSize" placeholder="Enter target size in KB">
+    <button onclick="compressImage()">Compress Image</button>
+
+    <div class="image-display">
+        <div>
+            <h3>Uploaded Image</h3>
+            <canvas id="compressCanvas"></canvas>
+            <div class="size-info" id="originalSizeDisplay"></div>
+        </div>
+        <div>
+            <h3>Compressed Image</h3>
+            <canvas id="compressedCanvas"></canvas>
+            <div class="size-info" id="compressedSizeInfo"></div>
+            <label for="compressFormatSelect">Download as:</label>
+            <select id="compressFormatSelect" onchange="updateCompressDownloadLink()">
+                <option value="jpeg">JPEG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WEBP</option>
+            </select>
+            <button class="download-btn" id="compressDownloadBtn" onclick="downloadCompressedImage()">Download Compressed Image</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let resizeImg, compressImg;
+    let outputCtx, compressCtx;
+
+    // Load image for resizing
+    function loadResizeImage() {
+        const file = document.getElementById("resizeImageInput").files[0];
+        if (file) {
+            resizeImg = new Image();
+            resizeImg.onload = function() {
+                const outputCanvas = document.getElementById("outputCanvas");
+                outputCtx = outputCanvas.getContext("2d");
+                outputCanvas.width = resizeImg.width;
+                outputCanvas.height = resizeImg.height;
+                outputCtx.drawImage(resizeImg, 0, 0);
+                document.getElementById("downloadLink").style.display = "inline";
+            };
+            resizeImg.src = URL.createObjectURL(file);
+        }
+    }
+
+    // Resize image
+    function resizeImage() {
+        const width = parseInt(document.getElementById("resizeWidth").value);
+        const height = parseInt(document.getElementById("resizeHeight").value);
+        const units = document.getElementById("resizeUnits").value;
+        const format = document.getElementById("resizeFormat").value;
+
+        // Convert units to pixels if necessary
+        let pixelWidth = width;
+        let pixelHeight = height;
+
+        if (units === "in") {
+            pixelWidth *= 96; // Assuming 96 DPI
+            pixelHeight *= 96;
+        } else if (units === "cm") {
+            pixelWidth *= 37.7953; // cm to pixels
+            pixelHeight *= 37.7953;
+        } else if (units === "mm") {
+            pixelWidth *= 3.77953; // mm to pixels
+            pixelHeight *= 3.77953;
+        }
+
+        const outputCanvas = document.getElementById("outputCanvas");
+        outputCtx = outputCanvas.getContext("2d");
+        
+        outputCanvas.width = pixelWidth;
+        outputCanvas.height = pixelHeight;
+        outputCtx.drawImage(resizeImg, 0, 0, pixelWidth, pixelHeight);
+
+        const downloadLink = document.getElementById("downloadLink");
+        downloadLink.href = outputCanvas.toDataURL(`image/${format}`);
+    }
+
+    // Load image for compression
+    function loadCompressImage() {
+        const file = document.getElementById("compressImageInput").files[0];
+        if (file) {
+            compressImg = new Image();
+            compressImg.onload = function() {
+                const compressCanvas = document.getElementById("compressCanvas");
+                compressCtx = compressCanvas.getContext("2d");
+                compressCanvas.width = compressImg.width;
+                compressCanvas.height = compressImg.height;
+                compressCtx.drawImage(compressImg, 0, 0);
+                
+                document.getElementById("originalSizeInfo").innerText = `Original Size: ${(file.size / 1024).toFixed(2)} KB`;
+                document.getElementById("originalSizeDisplay").innerText = `Original Size: ${(file.size / 1024).toFixed(2)} KB`;
+            };
+            compressImg.src = URL.createObjectURL(file);
+        }
+    }
+
+    // Compress image
+    function compressImage() {
+        const targetSizeKB = parseInt(document.getElementById("compressSize").value);
+        if (!compressImg || !targetSizeKB) {
+            alert("Please upload an image and enter a target size.");
+            return;
+        }
+
+        const compressCanvas = document.getElementById("compressCanvas");
+        compressCtx = compressCanvas.getContext("2d");
+        compressCtx.drawImage(compressImg, 0, 0);
+
+        let quality = 1.0; // Start with max quality
+        let compressedBlob;
+
+        // Decrease quality until we reach the target size
+        const checkSize = () => {
+            compressCanvas.toBlob(blob => {
+                if (blob.size / 1024 > targetSizeKB && quality > 0) {
+                    quality -= 0.05; // Decrease quality
+                    checkSize(); // Check again with reduced quality
+                } else {
+                    compressedBlob = blob;
+                    const compressedCanvas = document.getElementById("compressedCanvas");
+                    const compressedCtx = compressedCanvas.getContext("2d");
+                    compressedCanvas.width = compressImg.width;
+                    compressedCanvas.height = compressImg.height;
+                    compressedCtx.drawImage(compressImg, 0, 0);
+                    document.getElementById("compressedSizeInfo").innerText = `Compressed Size: ${(blob.size / 1024).toFixed(2)} KB`;
+                    document.getElementById("compressDownloadBtn").style.display = "inline"; // Show download button
+                }
+            }, "image/jpeg", quality);
+        };
+
+        checkSize();
+    }
+
+    // Update download link for compressed image
+    function updateCompressDownloadLink() {
+        const format = document.getElementById("compressFormatSelect").value;
+        const compressDownloadBtn = document.getElementById("compressDownloadBtn");
+
+        if (compressedBlob) {
+            const url = URL.createObjectURL(compressedBlob);
+            compressDownloadBtn.onclick = function () {
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `compressed_image.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+        }
+    }
+
+    // Download compressed image
+    function downloadCompressedImage() {
+        if (compressedBlob) {
+            const format = document.getElementById("compressFormatSelect").value;
+            const url = URL.createObjectURL(compressedBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `compressed_image.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    }
+
+    // Binary rain effect
+    function createRain() {
+        const rainContainer = document.getElementById("rain");
+        const numDrops = 150; // Number of rain drops
+        const dropSpeed = 10; // Speed of falling drops
+        const rainCharacters = ["0", "1", "001"]; // Characters for the rain effect
+
+        for (let i = 0; i < numDrops; i++) {
+            const drop = document.createElement("div");
+            drop.innerText = rainCharacters[Math.floor(Math.random() * rainCharacters.length)]; // Randomly select a character
+            drop.style.left = Math.random() * 100 + "vw"; // Random horizontal position
+            drop.style.animationDuration = (Math.random() * dropSpeed + 5) + "s"; // Random speed
+            drop.style.opacity = Math.random(); // Random opacity
+            rainContainer.appendChild(drop);
+            drop.style.animationName = 'fall'; // Assign falling animation
+        }
+    }
+
+    // Start the binary rain effect
+    createRain();
+</script>
+</body>
+</html>
+

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online PDF Watermarking Tool | Add Text Watermark to PDF Easily</title>
+    <meta name="description" content="Easily add text watermarks to your PDF documents online. Customize font size, color, and opacity for professional-looking PDF watermarking. Free and fast PDF watermarking tool.">
+    <meta name="keywords" content="PDF watermark, add watermark to PDF, online PDF watermarking, free PDF editor, watermark PDF online, PDF watermark tool, add text to PDF, customize PDF watermark, PDF watermarking service">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        canvas {
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls label, .controls input, .controls select {
+            margin: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        /* Loading Spinner */
+        #loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Add Watermark to PDF Online</h1>
+    <input type="file" id="pdf-upload" accept=".pdf">
+    <div class="controls">
+        <label>Watermark Text: <input type="text" id="watermark-text" placeholder="Enter watermark text"></label>
+        <label>Font Size: <input type="number" id="font-size" value="24"></label>
+        <label>Opacity: <input type="number" id="opacity" value="0.5" min="0" max="1" step="0.1"></label>
+        <label>Color: <input type="color" id="watermark-color" value="#969696"></label>
+        <label>Position:
+            <select id="position">
+                <option value="center">Center</option>
+                <option value="top-left">Top Left</option>
+                <option value="top-right">Top Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-right">Bottom Right</option>
+            </select>
+        </label>
+    </div>
+    <button onclick="applyWatermark()">Add Watermark</button>
+    <button onclick="downloadWatermarkedPDF()" disabled id="download-button">Download Watermarked PDF</button>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner"></div>
+
+    <!-- PDF Viewers -->
+    <h3>Uploaded PDF Preview</h3>
+    <canvas id="pdf-viewer"></canvas>
+
+    <h3>Watermarked PDF Preview</h3>
+    <canvas id="watermarked-viewer"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        let pdfDoc = null;
+        let watermarkedDoc = null; // Holds the watermarked PDF
+        const canvas = document.getElementById('pdf-viewer');
+        const ctx = canvas.getContext('2d');
+        const watermarkedCanvas = document.getElementById('watermarked-viewer');
+        const watermarkedCtx = watermarkedCanvas.getContext('2d');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const downloadButton = document.getElementById('download-button');
+
+        // Function to Show/Hide Loading Spinner
+        function showLoading(isLoading) {
+            loadingSpinner.style.display = isLoading ? 'block' : 'none';
+        }
+
+        // Load PDF and render first page
+        document.getElementById('pdf-upload').addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (file.type !== 'application/pdf') return alert('Please upload a PDF file.');
+
+            const reader = new FileReader();
+            reader.onload = async function () {
+                const pdfData = new Uint8Array(this.result);
+                pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                renderPage(1); // Render the first page
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                const viewport = page.getViewport({ scale: 1.5 });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.display = 'block'; // Show uploaded PDF viewer
+
+                page.render({ canvasContext: ctx, viewport: viewport });
+            });
+        }
+
+        async function applyWatermark() {
+            if (!pdfDoc) {
+                alert("Please upload a PDF first.");
+                return;
+            }
+
+            showLoading(true); // Show loading spinner
+
+            const watermarkText = document.getElementById('watermark-text').value;
+            const fontSize = parseInt(document.getElementById('font-size').value);
+            const opacity = parseFloat(document.getElementById('opacity').value);
+            const position = document.getElementById('position').value;
+            const watermarkColor = document.getElementById('watermark-color').value; // Get color value
+
+            if (!watermarkText) {
+                alert("Please enter watermark text.");
+                showLoading(false);
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Process each page and add watermark
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                if (i > 1) doc.addPage();
+
+                const page = await pdfDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 1 });
+                const tempCanvas = document.createElement("canvas");
+                tempCanvas.width = viewport.width;
+                tempCanvas.height = viewport.height;
+
+                await page.render({ canvasContext: tempCanvas.getContext("2d"), viewport }).promise;
+
+                // Add page as image
+                const pageDataURL = tempCanvas.toDataURL("image/png");
+                doc.addImage(pageDataURL, "PNG", 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+
+                // Set watermark text color
+                doc.setTextColor(watermarkColor); // Set text color from color input
+                doc.setFontSize(fontSize);
+                doc.setFont("Helvetica", "bold");
+                doc.setGState(new doc.GState({ opacity }));
+
+                // Position watermark
+                let x, y;
+                switch (position) {
+                    case "center":
+                        x = doc.internal.pageSize.getWidth() / 2 - doc.getTextWidth(watermarkText) / 2;
+                        y = doc.internal.pageSize.getHeight() / 2;
+                        break;
+                    case "top-left":
+                        x = 10;
+                        y = 20;
+                        break;
+                    case "top-right":
+                        x = doc.internal.pageSize.getWidth() - doc.getTextWidth(watermarkText) - 10;
+                        y = 20;
+                        break;
+                    case "bottom-left":
+                        x = 10;
+                        y = doc.internal.pageSize.getHeight() - 10;
+                        break;
+                    case "bottom-right":
+                        x = doc.internal.pageSize.getWidth() - doc.getTextWidth(watermarkText) - 10;
+                        y = doc.internal.pageSize.getHeight() - 10;
+                        break;
+                }
+
+                doc.text(watermarkText, x, y);
+            }
+
+            watermarkedDoc = doc; // Save the watermarked PDF document
+            showWatermarkedPDF(); // Show the watermarked PDF preview
+            showLoading(false); // Hide loading spinner
+            downloadButton.disabled = false; // Enable download button
+        }
+
+        function showWatermarkedPDF() {
+            const blob = watermarkedDoc.output('blob');
+            const url = URL.createObjectURL(blob);
+            const loadingTask = pdfjsLib.getDocument(url);
+
+            loadingTask.promise.then(pdf => {
+                return pdf.getPage(1).then(page => {
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    watermarkedCanvas.width = viewport.width;
+                    watermarkedCanvas.height = viewport.height;
+                    watermarkedCanvas.style.display = 'block'; // Show watermarked PDF viewer
+
+                    return page.render({ canvasContext: watermarkedCtx, viewport: viewport }).promise;
+                });
+            }).catch(error => {
+                console.error('Error loading watermarked PDF:', error);
+            });
+        }
+
+        function downloadWatermarkedPDF() {
+            if (!watermarkedDoc) {
+                alert("No watermarked PDF available for download.");
+                return;
+            }
+            watermarkedDoc.save('watermarked.pdf');
+        }
+    </script>
+</body>
+</html>
+

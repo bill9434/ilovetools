@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator - Calculate Your Body Mass Index</title>
+    <meta name="description" content="Calculate your Body Mass Index (BMI) with this easy-to-use tool. Enter your height and weight to find out your BMI instantly.">
+    <meta name="keywords" content="BMI calculator, Body Mass Index calculator, health calculator, BMI, calculate BMI, health tool">
+    <style>
+        /* Base Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #3a6186, #89253e);
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            max-width: 90%;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #26a69a;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1f8a78;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .download-btn {
+            margin-top: 15px;
+            background-color: #d9534f;
+        }
+
+        /* Floating bubbles */
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            background: #26a69a;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        .bubble1 { width: 120px; height: 120px; top: 15%; left: 10%; animation-delay: 0s; }
+        .bubble2 { width: 140px; height: 140px; top: 70%; left: 75%; animation-delay: 2s; }
+        .bubble3 { width: 100px; height: 100px; top: 30%; left: 60%; animation-delay: 4s; }
+        .bubble4 { width: 110px; height: 110px; top: 50%; left: 85%; animation-delay: 6s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BMI Calculator</h1>
+        <label for="weight">Weight (kg):</label>
+        <input type="number" id="weight" placeholder="Enter weight in kg" required>
+        <label for="height">Height (m):</label>
+        <input type="number" id="height" placeholder="Enter height in meters" required>
+        <button onclick="calculateBMI()">Calculate BMI</button>
+        <div class="result" id="result"></div>
+        <button class="download-btn" onclick="downloadResult()" id="download-btn" style="display:none;">Download Result</button>
+    </div>
+
+    <!-- Background Floating Bubbles -->
+    <div class="floating-bubble bubble1"></div>
+    <div class="floating-bubble bubble2"></div>
+    <div class="floating-bubble bubble3"></div>
+    <div class="floating-bubble bubble4"></div>
+
+    <!-- JavaScript for BMI Calculation and Download -->
+    <script>
+        function calculateBMI() {
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            
+            if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                document.getElementById("result").innerText = "Please enter valid weight and height.";
+                return;
+            }
+
+            const bmi = (weight / (height * height)).toFixed(2);
+            let category = "";
+
+            if (bmi < 18.5) {
+                category = "Underweight";
+            } else if (bmi < 24.9) {
+                category = "Normal weight";
+            } else if (bmi < 29.9) {
+                category = "Overweight";
+            } else {
+                category = "Obese";
+            }
+
+            document.getElementById("result").innerText = `Your BMI is ${bmi} (${category}).`;
+            document.getElementById("download-btn").style.display = "inline-block";
+        }
+
+        function downloadResult() {
+            const date = new Date().toLocaleString();
+            const resultText = document.getElementById("result").innerText;
+            const downloadContent = `Date: ${date}\n\n${resultText}`;
+            
+            const blob = new Blob([downloadContent], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "BMI_Result.txt";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
+

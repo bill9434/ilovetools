@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online PDF Signing Tool | Sign PDFs Easily</title>
+    <meta name="description" content="Sign PDFs online easily with our free PDF signing tool. Upload, sign, and download your PDF in a few clicks. Perfect for contracts, documents, and more.">
+    <meta name="keywords" content="Sign PDF online, PDF signer, free PDF signing, electronic signature, sign documents online">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #pdf-viewer {
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        #signature-canvas {
+            display: none;
+            border: 1px solid #ccc;
+            cursor: crosshair;
+            margin-top: 10px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Loading Spinner */
+        #loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Sign PDF Online</h1>
+    <input type="file" id="pdf-upload" accept=".pdf">
+    <button onclick="openSignatureCanvas()">Draw Signature</button>
+    <button onclick="downloadSignedPDF()">Download Signed PDF</button>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner"></div>
+
+    <!-- PDF Viewer Canvas -->
+    <canvas id="pdf-viewer"></canvas>
+
+    <!-- Signature Drawing Canvas -->
+    <canvas id="signature-canvas" width="400" height="100"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        let pdfDoc = null,
+            pageNum = 1,
+            signatureCanvas,
+            isSigning = false,
+            signatureImage = null;
+
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // Function to Show/Hide Loading Spinner
+        function showLoading(isLoading) {
+            loadingSpinner.style.display = isLoading ? 'block' : 'none';
+        }
+
+        // Load and Render PDF
+        document.getElementById('pdf-upload').addEventListener('change', async function (e) {
+            showLoading(true);  // Show loading spinner
+            const file = e.target.files[0];
+            if (file.type !== 'application/pdf') return alert('Please upload a PDF file.');
+
+            const reader = new FileReader();
+            reader.onload = async function () {
+                try {
+                    const pdfData = new Uint8Array(this.result);
+                    pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                    renderPage(pageNum);
+                } catch (error) {
+                    console.error("Error loading PDF:", error);
+                    alert("Failed to load PDF. Please try again.");
+                } finally {
+                    showLoading(false); // Hide loading spinner
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('pdf-viewer');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 1.5 });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                page.render(renderContext);
+            }).catch(error => {
+                console.error("Error rendering page:", error);
+                alert("Failed to render PDF page.");
+            });
+        }
+
+        // Draw Signature
+        function openSignatureCanvas() {
+            signatureCanvas = document.getElementById('signature-canvas');
+            signatureCanvas.style.display = 'block';
+            isSigning = true;
+            const ctx = signatureCanvas.getContext('2d');
+            ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+
+            let drawing = false;
+            signatureCanvas.onmousedown = () => (drawing = true);
+            signatureCanvas.onmouseup = () => {
+                drawing = false;
+                signatureImage = signatureCanvas.toDataURL('image/png'); // Save the signature image
+            };
+            signatureCanvas.onmousemove = e => {
+                if (!drawing) return;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            };
+        }
+
+        async function downloadSignedPDF() {
+            if (!pdfDoc) {
+                alert('Upload a PDF first.');
+                return;
+            }
+            if (!signatureImage) {
+                alert('Draw a signature before downloading.');
+                return;
+            }
+
+            showLoading(true); // Show loading spinner
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    const page = await pdfDoc.getPage(i);
+                    const viewport = page.getViewport({ scale: 1 });
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                    const pageImage = canvas.toDataURL('image/png');
+                    if (i > 1) doc.addPage();
+                    doc.addImage(pageImage, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+
+                    if (i === 1 && signatureImage) {
+                        // Adjust signature position here
+                        doc.addImage(signatureImage, 'PNG', 50, 250, 100, 30); // Adjust position as needed
+                    }
+                }
+
+                doc.save('signed.pdf');
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("Failed to download signed PDF. Please try again.");
+            } finally {
+                showLoading(false); // Hide loading spinner
+            }
+        }
+    </script>
+</body>
+</html>
+

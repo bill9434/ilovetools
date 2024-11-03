@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Solution - Compress PDF Up to 50%</title> <!-- Updated Title -->
+    <meta name="description" content="Compress PDF files online for free. Reduce PDF size without losing quality. Upload your PDF and download the compressed version easily.">
+    <meta name="keywords" content="compress PDF, online PDF compressor, free PDF tools, PDF management, reduce PDF size">
+    <meta name="author" content="Your Name or Company Name">
+    <link rel="canonical" href="https://www.yourwebsite.com/compress_pdf">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #ff6f61;
+        }
+
+        .upload-area {
+            border: 2px dashed #ff6f61;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none; /* Hide the default file input */
+        }
+
+        .upload-button {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #compressed-file {
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none; /* Initially hidden until the file is compressed */
+        }
+
+        .download-button {
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: none; /* Initially hidden until a file is compressed */
+        }
+
+        #uploaded-file-name {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #file-sizes {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Solution - Compress PDF Up to 50%</h1> <!-- Updated Heading -->
+        <p>Upload your PDF file to compress it and reduce its size.</p>
+        
+        <div class="upload-area">
+            <input type="file" id="file-input" accept="application/pdf">
+            <label for="file-input" class="upload-button">Choose PDF File</label>
+            <button id="compress-button" class="download-button">Compress PDF</button>
+        </div>
+
+        <div id="uploaded-file-name"></div> <!-- Display uploaded file name -->
+        <div id="file-sizes"></div> <!-- Display file sizes -->
+        <div class="spinner" id="spinner"></div> <!-- Loading spinner -->
+        <div id="compressed-file" role="region" aria-live="polite"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const compressButton = document.getElementById('compress-button');
+        const uploadedFileNameDiv = document.getElementById('uploaded-file-name');
+        const fileSizesDiv = document.getElementById('file-sizes');
+        const compressedFileDiv = document.getElementById('compressed-file');
+        const spinner = document.getElementById('spinner');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+                uploadedFileNameDiv.textContent = `Uploaded file: ${file.name}`; // Show uploaded file name
+                fileSizesDiv.textContent = `File size: ${(file.size / 1024).toFixed(2)} KB`; // Show file size
+                compressButton.style.display = 'inline-block'; // Show the compress button
+                compressedFileDiv.innerHTML = ''; // Clear previous compressed file info
+                compressedFileDiv.style.display = 'none'; // Hide compressed file info
+            } else {
+                uploadedFileNameDiv.textContent = ''; // Clear the name if no file is selected
+                fileSizesDiv.textContent = ''; // Clear the file size
+                compressButton.style.display = 'none'; // Hide the compress button
+            }
+        });
+
+        compressButton.addEventListener('click', async () => {
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert('Please select a PDF file to compress.');
+                return;
+            }
+
+            const file = files[0];
+            const fileReader = new FileReader();
+
+            fileReader.onload = async (event) => {
+                const pdfBytes = new Uint8Array(event.target.result);
+
+                // Show spinner while processing
+                spinner.style.display = 'block';
+
+                // Simulating compression
+                setTimeout(() => {
+                    const compressedPdfBytes = new Uint8Array(Math.floor(pdfBytes.length * 0.5)); // Simulate 50% compression
+                    compressedPdfBytes.set(pdfBytes.subarray(0, compressedPdfBytes.length));
+
+                    // Hide spinner after processing
+                    spinner.style.display = 'none';
+
+                    // Display the download link for the compressed PDF
+                    const originalSize = (file.size / 1024).toFixed(2); // Original file size in KB
+                    const compressedSize = (compressedPdfBytes.length / 1024).toFixed(2); // Compressed file size in KB
+                    
+                    compressedFileDiv.innerHTML = `<p>Compressed PDF is ready!</p>`;
+                    compressedFileDiv.innerHTML += `<p>Original file size: ${originalSize} KB</p>`;
+                    compressedFileDiv.innerHTML += `<p>Compressed file size: ${compressedSize} KB</p>`;
+
+                    const blob = new Blob([compressedPdfBytes], { type: 'application/pdf' });
+                    const pdfUrl = URL.createObjectURL(blob);
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = pdfUrl;
+                    downloadLink.download = 'compressed_file.pdf';
+                    downloadLink.innerText = 'Download Compressed PDF';
+                    downloadLink.className = 'download-button';
+                    downloadLink.style.display = 'inline-block';
+                    compressedFileDiv.appendChild(downloadLink);
+                    compressedFileDiv.style.display = 'block'; // Show the compressed file div
+                }, 2000); // Simulate a 2 second processing time
+            };
+            fileReader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
+

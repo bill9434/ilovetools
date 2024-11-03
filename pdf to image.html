@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Free PDF to Image Conversion Tool</title>
+    <meta name="description" content="Easily convert PDF documents to various image formats like JPG, PNG, GIF, and BMP online for free. Upload your PDF files and download high-quality images instantly.">
+    <meta name="keywords" content="PDF to image, PDF to JPG, PDF to PNG, online PDF converter, free PDF to image converter, convert PDF to JPG, convert PDF to PNG">
+    <link rel="canonical" href="YOUR_PAGE_URL_HERE"> <!-- Replace with the actual URL -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        h2, h3 {
+            margin: 10px 0;
+        }
+        p {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .image-preview {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .image-preview div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .image-preview img {
+            max-width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Free PDF to Image Conversion Tool</h1>
+    <p>Transform your PDF documents into high-quality images effortlessly with our Online Free PDF to Image Conversion Tool. Whether you need JPG, PNG, GIF, or BMP formats, this user-friendly tool allows you to upload your PDF files and convert them to images in just a few clicks.</p>
+    <h2>Key Features:</h2>
+    <ul>
+        <li>Multiple Image Formats: Choose from various image formats, including JPG, PNG, GIF, and BMP, to suit your specific needs.</li>
+        <li>Fast Conversion: Our tool processes your PDFs quickly, providing you with immediate access to your converted images.</li>
+        <li>High-Quality Output: Each page of your PDF is converted into a crisp, clear image, ensuring you don’t lose quality during the conversion process.</li>
+        <li>Download Options: Easily download each converted image individually with just one click.</li>
+        <li>User-Friendly Interface: Designed for simplicity, our tool requires no technical skills—just upload your file and start converting!</li>
+    </ul>
+    <p>With this tool, converting PDFs to images has never been easier or more efficient. Try it today and enhance your document-sharing experience!</p>
+
+    <input type="file" id="pdf-upload" accept=".pdf">
+    <div class="format-options">
+        <label for="image-format">Select Image Format:</label>
+        <select id="image-format">
+            <option value="jpg">JPG</option>
+            <option value="png">PNG</option>
+            <option value="gif">GIF</option>
+            <option value="bmp">BMP</option>
+        </select>
+    </div>
+    <button onclick="convertPDFToImage()">Convert to Image</button>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner"></div>
+
+    <h3>Converted Images</h3>
+    <div class="image-preview" id="image-preview"></div>
+
+    <script>
+        function showLoading(isLoading) {
+            document.getElementById('loading-spinner').style.display = isLoading ? 'block' : 'none';
+        }
+
+        async function convertPDFToImage() {
+            const fileInput = document.getElementById('pdf-upload');
+            const file = fileInput.files[0];
+            const selectedFormat = document.getElementById('image-format').value;
+
+            if (!file || file.type !== 'application/pdf') {
+                alert('Please upload a valid PDF file.');
+                return;
+            }
+
+            showLoading(true); // Show loading spinner
+            const pdfData = await readPDFFile(file);
+            const images = await pdfToImages(pdfData, selectedFormat);
+            showImages(images);
+            showLoading(false); // Hide loading spinner
+        }
+
+        function readPDFFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve(new Uint8Array(reader.result));
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function pdfToImages(pdfData, format) {
+            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+            const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+            const images = [];
+
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const page = await pdfDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 2 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const context = canvas.getContext('2d');
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                const imgData = canvas.toDataURL(`image/${format}`);
+                images.push(imgData);
+            }
+
+            return images;
+        }
+
+        function showImages(images) {
+            const previewContainer = document.getElementById('image-preview');
+            previewContainer.innerHTML = ''; // Clear previous images
+
+            images.forEach((imgData, index) => {
+                const imageContainer = document.createElement('div');
+
+                const img = document.createElement('img');
+                img.src = imgData;
+                img.alt = `Converted Image of Page ${index + 1}`; // Alt text for SEO
+                imageContainer.appendChild(img);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imgData;
+                downloadLink.download = `page-${index + 1}.${document.getElementById('image-format').value}`; // Change to the appropriate format if needed
+                downloadLink.innerText = 'Download Image';
+                downloadLink.style.marginTop = '10px';
+                imageContainer.appendChild(downloadLink);
+
+                previewContainer.appendChild(imageContainer);
+            });
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</body>
+</html>
+

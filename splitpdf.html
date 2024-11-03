@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Solution - Split PDF Online Free</title>
+    <meta name="description" content="Easily split PDF files online for free. Upload your PDF and split it into separate pages or specified sections. Quick and efficient PDF solutions.">
+    <meta name="keywords" content="split PDF, PDF tools, online PDF splitter, free PDF solution, PDF management, PDF page extraction">
+    <meta name="author" content="Your Name or Company Name">
+    <link rel="canonical" href="https://www.yourwebsite.com/split_pdf">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #ff6f61;
+        }
+
+        .upload-area {
+            border: 2px dashed #ff6f61;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none; /* Hide the default file input */
+        }
+
+        .upload-button {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #file-list {
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none; /* Initially hidden until files are uploaded */
+        }
+
+        .split-page {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+            margin: 10px 0;
+        }
+
+        .split-button {
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            display: none; /* Initially hidden until a file is uploaded */
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            display: block;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Solution - Split PDF</h1>
+        <p>Select a PDF file to split it into separate pages or sections.</p>
+        
+        <div class="upload-area">
+            <input type="file" id="file-input" accept="application/pdf">
+            <label for="file-input" class="upload-button">Choose PDF File</label>
+            <button id="split-button" class="split-button">Split PDF</button>
+        </div>
+
+        <div id="file-list" role="region" aria-live="polite"></div>
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', (event) => {
+            const fileList = document.getElementById('file-list');
+            const files = event.target.files;
+
+            if (files.length > 0) {
+                fileList.innerHTML = `<p>Uploaded File: ${files[0].name}</p>`; // Display the name of the uploaded file
+                fileList.style.display = 'block'; // Show the file list
+                document.getElementById('split-button').style.display = 'inline-block'; // Show the split button
+            }
+        });
+
+        document.getElementById('split-button').addEventListener('click', async () => {
+            const fileInput = document.getElementById('file-input');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert('Please select a PDF file to split.');
+                return;
+            }
+
+            const file = files[0];
+            const fileReader = new FileReader();
+
+            fileReader.onload = async (event) => {
+                const pdfBytes = new Uint8Array(event.target.result);
+                const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+                
+                // Clear any previous split page boxes
+                const fileList = document.getElementById('file-list');
+                fileList.innerHTML = `<p>Uploaded File: ${files[0].name}</p><h3>Split Pages:</h3>`; // Add header for split pages
+                
+                // This will create a PDF for each page
+                for (let i = 0; i < pdfDoc.getPageCount(); i++) {
+                    const newPdfDoc = await PDFLib.PDFDocument.create();
+                    const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
+                    newPdfDoc.addPage(copiedPage);
+                    
+                    const splitPdfBytes = await newPdfDoc.save();
+                    const blob = new Blob([splitPdfBytes], { type: 'application/pdf' });
+                    const pdfUrl = URL.createObjectURL(blob);
+                    
+                    // Create a box for each split PDF page
+                    const splitPageDiv = document.createElement('div');
+                    splitPageDiv.className = 'split-page';
+                    splitPageDiv.innerHTML = `
+                        <p>Page ${i + 1}</p>
+                        <a href="${pdfUrl}" download="split_page_${i + 1}.pdf">Download Page ${i + 1}</a>
+                    `;
+                    fileList.appendChild(splitPageDiv);
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
+

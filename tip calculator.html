@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Free Tip Calculator</title>
+    <meta name="description" content="Calculate tips easily with our user-friendly tip calculator. Find out how much to tip for various services and understand tipping customs globally.">
+    <meta name="keywords" content="tip calculator, calculate tip, gratuity, tipping percentage, service industry, online tip calculator, restaurant tip calculator, tipping customs, calculate gratuity">
+    <meta name="author" content="Your Name">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            margin-top: 10px;
+            display: block;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border: 1px solid #bcdff1;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tip Calculator</h1>
+        
+        <label for="amount">Bill Amount:</label>
+        <input type="number" id="amount" placeholder="Enter bill amount" required>
+
+        <label for="currency">Currency:</label>
+        <select id="currency">
+            <option value="$">$ (USD)</option>
+            <option value="₹">₹ (INR)</option>
+            <option value="€">€ (EUR)</option>
+            <option value="£">£ (GBP)</option>
+            <option value="¥">¥ (JPY)</option>
+        </select>
+
+        <label for="tip">Tip Percentage:</label>
+        <select id="tip" required>
+            <option value="15">15%</option>
+            <option value="18">18%</option>
+            <option value="20">20%</option>
+            <option value="custom">Custom</option>
+        </select>
+
+        <div id="customTipContainer" style="display: none;">
+            <label for="customTip">Custom Tip Percentage:</label>
+            <input type="number" id="customTip" placeholder="Enter custom tip percentage">
+        </div>
+
+        <button id="calculateBtn">Calculate Tip</button>
+
+        <div class="result" id="result" style="display: none;"></div>
+
+        <div class="info" id="info" style="display: none;">
+            <p>A tip or gratuity is an additional sum of money given to certain service workers as a gesture of appreciation for their service. The practice and expectations surrounding tips can vary significantly across different cultures. In some East Asian countries, like Japan, tipping is often considered rude and may even be perceived as a bribe. Conversely, in countries like the United States, tipping is a common and expected practice, often influencing a service worker's earnings as it may contribute to their minimum wage requirements. It is crucial for tourists to familiarize themselves with the tipping customs of the countries they visit. In places where tipping is customary, some establishments may automatically include gratuity in the final bill, especially for larger groups. While expressing gratitude through a tip may be well-intentioned for travelers from the U.S., it is important to be aware that in some cultures, this gesture may be misunderstood.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Services</th>
+                        <th>Typical Tip</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Restaurants, Bartenders</td>
+                        <td>15%-20%</td>
+                    </tr>
+                    <tr>
+                        <td>Food Delivery</td>
+                        <td>15%-20% depending on the distance, total price, etc.</td>
+                    </tr>
+                    <tr>
+                        <td>Hotel Room Service</td>
+                        <td>Normally included in the price. If not, 15%-20%</td>
+                    </tr>
+                    <tr>
+                        <td>Hotel Housekeeping</td>
+                        <td>Not expected, $1-$2 per person per night.</td>
+                    </tr>
+                    <tr>
+                        <td>Automotive Services, Mechanic</td>
+                        <td>Not expected, or a few dollars depending on the amount.</td>
+                    </tr>
+                    <tr>
+                        <td>Mover, Furniture, or Appliance Delivery</td>
+                        <td>Not expected, or $5, $10, $20 each depending on the amount.</td>
+                    </tr>
+                    <tr>
+                        <td>Plumber, Handyman, Electrician, Cleaner, or Other Home Services</td>
+                        <td>Not expected, or $5, $10, $20 each depending on the amount.</td>
+                    </tr>
+                    <tr>
+                        <td>Hairstylists, Barber, Nail Service, etc.</td>
+                        <td>10%-20%</td>
+                    </tr>
+                    <tr>
+                        <td>Massage</td>
+                        <td>10%-20%</td>
+                    </tr>
+                    <tr>
+                        <td>Taxi or Limo Drivers</td>
+                        <td>15%-20%</td>
+                    </tr>
+                    <tr>
+                        <td>Shuttle Drivers, Parking Attendant</td>
+                        <td>$1-$3</td>
+                    </tr>
+                    <tr>
+                        <td>Tour Guides</td>
+                        <td>$1-$5 depending on the length of the tour</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const calculateBtn = document.getElementById('calculateBtn');
+        const result = document.getElementById('result');
+        const tipSelect = document.getElementById('tip');
+        const customTipContainer = document.getElementById('customTipContainer');
+        const customTipInput = document.getElementById('customTip');
+        const currencySelect = document.getElementById('currency');
+        const info = document.getElementById('info');
+
+        // Show custom tip input when selected
+        tipSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customTipContainer.style.display = 'block';
+            } else {
+                customTipContainer.style.display = 'none';
+            }
+        });
+
+        // Calculate tip on button click
+        calculateBtn.addEventListener('click', function() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            let tipPercentage;
+
+            if (tipSelect.value === 'custom') {
+                tipPercentage = parseFloat(customTipInput.value);
+                if (isNaN(tipPercentage)) {
+                    alert("Please enter a valid custom tip percentage.");
+                    return;
+                }
+            } else {
+                tipPercentage = parseFloat(tipSelect.value);
+            }
+
+            if (isNaN(amount) || amount < 0) {
+                alert("Please enter a valid bill amount.");
+                return;
+            }
+
+            const tipAmount = (amount * (tipPercentage / 100)).toFixed(2);
+            const totalAmount = (amount + parseFloat(tipAmount)).toFixed(2);
+            const currency = currencySelect.value;
+            result.style.display = 'block';
+            result.innerHTML = `<strong>Tip Amount: </strong>${currency}${tipAmount}<br><strong>Total Amount: </strong>${currency}${totalAmount}`;
+            info.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
+

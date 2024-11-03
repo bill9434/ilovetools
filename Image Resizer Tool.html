@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer - Resize Your Images Easily</title>
+    <meta name="description" content="Resize your images easily with our user-friendly Image Resizer tool. Drag and drop images, preview results, and download in multiple formats.">
+    <meta name="keywords" content="Image Resizer, resize images, drag and drop, preview images, image converter">
+    <style>
+        /* Base Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: #fff;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 400px;
+            max-width: 90%;
+            z-index: 10;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        select {
+            padding: 5px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .upload-area {
+            border: 2px dashed #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .preview {
+            margin: 20px 0;
+            max-width: 100%;
+            display: none;
+        }
+
+        button {
+            background-color: #27ae60;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        /* Background Animation */
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0.5;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .bubble1 { width: 120px; height: 120px; top: 10%; left: 15%; animation-delay: 0s; }
+        .bubble2 { width: 150px; height: 150px; top: 70%; left: 80%; animation-delay: 1s; }
+        .bubble3 { width: 100px; height: 100px; top: 40%; left: 30%; animation-delay: 2s; }
+        .bubble4 { width: 110px; height: 110px; top: 50%; left: 85%; animation-delay: 3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Resizer</h1>
+        <div class="upload-area" id="uploadArea">Drag & Drop Your Image Here</div>
+        
+        <div>
+            <input type="number" id="width" placeholder="Width" min="1">
+            <select id="widthUnit">
+                <option value="px">px</option>
+                <option value="mm">mm</option>
+                <option value="in">in</option>
+            </select>
+        </div>
+        
+        <div>
+            <input type="number" id="height" placeholder="Height" min="1">
+            <select id="heightUnit">
+                <option value="px">px</option>
+                <option value="mm">mm</option>
+                <option value="in">in</option>
+            </select>
+        </div>
+        
+        <button id="resizeButton">Resize Image</button>
+        <img id="preview" class="preview" src="" alt="Image Preview">
+    </div>
+
+    <!-- Background Floating Bubbles -->
+    <div class="floating-bubble bubble1"></div>
+    <div class="floating-bubble bubble2"></div>
+    <div class="floating-bubble bubble3"></div>
+    <div class="floating-bubble bubble4"></div>
+
+    <!-- JavaScript for Image Resizing -->
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const resizeButton = document.getElementById('resizeButton');
+        const preview = document.getElementById('preview');
+        let uploadedImage;
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#2c3e50';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'transparent';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedImage = new Image();
+                    uploadedImage.src = event.target.result;
+                    preview.src = uploadedImage.src;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload a valid image file.');
+            }
+        });
+
+        resizeButton.addEventListener('click', () => {
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const widthUnit = document.getElementById('widthUnit').value;
+            const heightUnit = document.getElementById('heightUnit').value;
+
+            // Convert units to pixels
+            const widthInPixels = convertToPixels(width, widthUnit);
+            const heightInPixels = convertToPixels(height, heightUnit);
+
+            if (uploadedImage && width && height) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = widthInPixels;
+                canvas.height = heightInPixels;
+                ctx.drawImage(uploadedImage, 0, 0, widthInPixels, heightInPixels);
+                const resizedImage = canvas.toDataURL();
+                const downloadLink = document.createElement('a');
+                downloadLink.href = resizedImage;
+                downloadLink.download = 'resized-image.png';
+                downloadLink.click();
+            } else {
+                alert('Please upload an image and specify dimensions.');
+            }
+        });
+
+        function convertToPixels(value, unit) {
+            value = parseFloat(value);
+            switch (unit) {
+                case 'mm':
+                    return value * 3.779527; // 1 mm = 3.779527 pixels
+                case 'in':
+                    return value * 96; // 1 inch = 96 pixels
+                default:
+                    return value; // Assuming value is already in pixels
+            }
+        }
+    </script>
+</body>
+</html>
+

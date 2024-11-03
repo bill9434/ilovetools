@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator - Calculate Your Age Effortlessly</title>
+    <meta name="description" content="Calculate your age accurately with this easy-to-use Age Calculator. Input your birth date to find out how many years, months, and days old you are.">
+    <meta name="keywords" content="age calculator, calculate age, birth date calculator, age finder, how old am I, date of birth">
+    <style>
+        /* Base Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 400px;
+            max-width: 90%;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #ff6b81;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff4757;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Floating bubbles */
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.4;
+            background: #ff6b81;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        .bubble1 { width: 120px; height: 120px; top: 15%; left: 10%; animation-delay: 0s; }
+        .bubble2 { width: 140px; height: 140px; top: 65%; left: 75%; animation-delay: 2s; }
+        .bubble3 { width: 100px; height: 100px; top: 30%; left: 60%; animation-delay: 4s; }
+        .bubble4 { width: 110px; height: 110px; top: 50%; left: 85%; animation-delay: 6s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Age Calculator</h1>
+        <label for="birthdate">Enter Your Birth Date:</label>
+        <input type="date" id="birthdate" required>
+        <button onclick="calculateAge()">Calculate Age</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <!-- Background Floating Bubbles -->
+    <div class="floating-bubble bubble1"></div>
+    <div class="floating-bubble bubble2"></div>
+    <div class="floating-bubble bubble3"></div>
+    <div class="floating-bubble bubble4"></div>
+
+    <!-- JavaScript for Age Calculation -->
+    <script>
+        function calculateAge() {
+            const birthDate = new Date(document.getElementById("birthdate").value);
+            const today = new Date();
+            
+            if (isNaN(birthDate)) {
+                document.getElementById("result").innerText = "Please enter a valid date.";
+                return;
+            }
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            const days = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+            const months = Math.floor(days / 30.44); // Average days in a month
+
+            document.getElementById("result").innerText = `You are ${age} years, ${months % 12} months, and ${days % 30} days old.`;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Solution - Convert PDF to Word</title>
+    <meta name="description" content="Convert your PDF files to Word documents online for free. Upload your PDF and easily download the converted Word file.">
+    <meta name="keywords" content="convert PDF to Word, online PDF converter, free PDF tools, PDF management, Word document conversion">
+    <meta name="author" content="Your Name or Company Name">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #ff6f61;
+        }
+
+        .upload-area {
+            border: 2px dashed #ff6f61;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none; /* Hide the default file input */
+        }
+
+        .upload-button {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #download-link {
+            display: none; /* Initially hidden until a file is converted */
+            margin-top: 20px;
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF to Word Converter</h1>
+        <p>Upload your PDF file to convert it to a Word document.</p>
+        
+        <div class="upload-area">
+            <input type="file" id="file-input" accept=".pdf" required>
+            <label for="file-input" class="upload-button">Choose PDF File</label>
+            <button id="convert-button" class="upload-button">Convert to Word</button>
+        </div>
+
+        <a id="download-link" href="#" download>Download Converted Word Document</a>
+    </div>
+
+    <script>
+        document.getElementById('convert-button').addEventListener('click', async () => {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a PDF file to convert.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+
+                const blob = await response.blob();
+                const downloadLink = document.getElementById('download-link');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.style.display = 'inline-block';
+                downloadLink.textContent = 'Download Converted Word Document';
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+

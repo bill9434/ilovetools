@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code & Barcode Generator</title>
+    <meta name="description" content="Generate custom QR codes and barcodes from text or URLs. Download your codes instantly for free.">
+    <meta name="keywords" content="QR Code Generator, Barcode Generator, Generate Barcode, Generate QR Code, QR Code for Text, Barcode for Text, Custom Barcode, Download QR Code, Download Barcode">
+    <style>
+        /* Base styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #fff;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            max-width: 90%;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        p.description {
+            font-size: 1rem;
+            color: #b3b3b3;
+            margin-bottom: 15px;
+        }
+
+        input, button, select {
+            padding: 12px;
+            margin: 10px 0;
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        input {
+            text-align: center;
+        }
+
+        button {
+            background-color: #ff4081;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff3d71;
+        }
+
+        #qr-code, #barcode {
+            margin-top: 20px;
+            border: 4px solid #ff4081;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        #qr-code {
+            width: 250px;
+            height: 250px;
+        }
+
+        #barcode {
+            width: 250px;
+            height: 100px;
+        }
+
+        .download-btn {
+            display: none;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1rem;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 15px 0 0 0;
+            text-decoration: none;
+        }
+
+        /* Floating background effect */
+        .floating-ball {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            background: #ff4081;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        .ball1 { width: 100px; height: 100px; top: 20%; left: 15%; animation-delay: 0s; }
+        .ball2 { width: 120px; height: 120px; top: 70%; left: 70%; animation-delay: 2s; }
+        .ball3 { width: 80px; height: 80px; top: 30%; left: 60%; animation-delay: 4s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR & Barcode Generator</h1>
+        <p class="description">Generate custom QR codes and barcodes. Easily create and download your codes for personal or business use.</p>
+        <input type="text" id="text-input" placeholder="Enter text or URL" />
+        <select id="code-type">
+            <option value="qr">QR Code</option>
+            <option value="barcode">Barcode</option>
+        </select>
+        <button onclick="generateCode()">Generate Code</button>
+        <canvas id="qr-code" style="display: none;"></canvas>
+        <canvas id="barcode" style="display: none;"></canvas>
+        <a id="download-btn" class="download-btn" download="GeneratedCode.png">Download Code</a>
+    </div>
+
+    <!-- Background Floating Balls -->
+    <div class="floating-ball ball1"></div>
+    <div class="floating-ball ball2"></div>
+    <div class="floating-ball ball3"></div>
+
+    <!-- JavaScript for QR Code and Barcode Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script>
+        function generateCode() {
+            const inputText = document.getElementById("text-input").value;
+            const qrCodeCanvas = document.getElementById("qr-code");
+            const barcodeCanvas = document.getElementById("barcode");
+            const downloadBtn = document.getElementById("download-btn");
+            const codeType = document.getElementById("code-type").value;
+
+            if (inputText.trim() === "") {
+                alert("Please enter text or a URL to generate a code.");
+                return;
+            }
+
+            // Hide both canvases and clear content before generating a new code
+            qrCodeCanvas.style.display = "none";
+            barcodeCanvas.style.display = "none";
+            downloadBtn.style.display = "none";
+
+            if (codeType === "qr") {
+                QRCode.toCanvas(qrCodeCanvas, inputText, {
+                    width: 250,
+                    margin: 1,
+                    color: {
+                        dark: "#ff4081", // QR code color
+                        light: "#ffffff" // Background color
+                    }
+                }, function (error) {
+                    if (error) console.error(error);
+
+                    // Show QR canvas and download button
+                    qrCodeCanvas.style.display = "block";
+                    downloadBtn.style.display = "inline-block";
+                    downloadBtn.href = qrCodeCanvas.toDataURL("image/png");
+                });
+            } else if (codeType === "barcode") {
+                JsBarcode(barcodeCanvas, inputText, {
+                    format: "CODE128",
+                    lineColor: "#ff4081",
+                    width: 1.5,
+                    height: 80,
+                    displayValue: true,
+                    margin: 5
+                });
+
+                // Show barcode canvas and download button
+                barcodeCanvas.style.display = "block";
+                downloadBtn.style.display = "inline-block";
+                downloadBtn.href = barcodeCanvas.toDataURL("image/png");
+            }
+        }
+    </script>
+</body>
+</html>
+

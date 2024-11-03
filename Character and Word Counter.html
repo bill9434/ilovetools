@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlimited Character & Word Counter - Count Your Text Effortlessly</title>
+    <meta name="description" content="Accurate and easy-to-use character and word counter tool. Paste any text to get instant word and character counts with unlimited text input.">
+    <meta name="keywords" content="character counter, word counter, text counter, unlimited text counter, character count, word count tool, text analysis, free online counter">
+    <style>
+        /* Base styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            width: 700px; /* Increased width */
+            max-width: 90%;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        p.description {
+            font-size: 1.2rem;
+            color: #b3b3b3;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px; /* Increased height */
+            padding: 15px;
+            border-radius: 6px;
+            border: none;
+            resize: none;
+            font-size: 1.1rem;
+        }
+
+        .count-output {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        /* Floating background effect */
+        .floating-bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.4;
+            background: #26d0ce;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        .bubble1 { width: 120px; height: 120px; top: 15%; left: 10%; animation-delay: 0s; }
+        .bubble2 { width: 140px; height: 140px; top: 65%; left: 75%; animation-delay: 2s; }
+        .bubble3 { width: 100px; height: 100px; top: 30%; left: 60%; animation-delay: 4s; }
+        .bubble4 { width: 110px; height: 110px; top: 50%; left: 85%; animation-delay: 6s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unlimited Character & Word Counter</h1>
+        <p class="description">Effortlessly count words and characters with unlimited text input. Perfect for writers, students, and content creators!</p>
+        <textarea id="text-input" placeholder="Type or paste your text here..." oninput="countText()"></textarea>
+        <div class="count-output">
+            Characters: <span id="character-count">0</span> | Words: <span id="word-count">0</span>
+        </div>
+    </div>
+
+    <!-- Background Floating Bubbles -->
+    <div class="floating-bubble bubble1"></div>
+    <div class="floating-bubble bubble2"></div>
+    <div class="floating-bubble bubble3"></div>
+    <div class="floating-bubble bubble4"></div>
+
+    <!-- JavaScript for Text Counting -->
+    <script>
+        function countText() {
+            const text = document.getElementById("text-input").value;
+            const characterCount = text.length;
+            const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
+            document.getElementById("character-count").innerText = characterCount;
+            document.getElementById("word-count").innerText = wordCount;
+        }
+    </script>
+</body>
+</html>
+
